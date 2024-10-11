@@ -49,3 +49,10 @@ def dfs(self, grid, i, j):
     self.dfs(grid, i, j+1)
     self.dfs(grid, i, j-1)
 '''
+
+'''
+Depth first search
+
+https://www.geeksforgeeks.org/depth-first-search-or-dfs-for-a-graph/
+
+'''
