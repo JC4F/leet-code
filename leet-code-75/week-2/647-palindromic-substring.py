@@ -70,4 +70,43 @@ class Solution {
 
 Time Complexity would be O(n^2)
 Space Complexity would be O(1).
+
+Solution 3: DP
+class Solution:
+    def countSubstrings(self, s: str) -> int:
+        n = len(s)
+        palindrome = [[False] * n for _ in range(n)]
+        ans = 0
+
+        for i in range(n):
+            palindrome[i][i] = True
+            ans += 1
+
+        for i in range(n - 1):
+            if s[i] == s[i + 1]:
+                palindrome[i][i + 1] = True
+                ans += 1
+
+        for length in range(3, n + 1):
+            for i in range(n - length + 1):
+                if s[i] == s[i + length - 1] and palindrome[i + 1][i + length - 2]:
+                    palindrome[i][i + length - 1] = True
+                    ans += 1
+
+        return ans
+
+    ===> smaller 
+    class Solution:
+    def countSubstrings(self, s: str) -> int:
+        n = len(s)
+        palindrome = [[False] * n for _ in range(n)]
+        ans = 0
+
+        for length in range(1, n + 1):
+            for i in range(n - length + 1):
+                if s[i] == s[i + length - 1] and (length <= 2 or palindrome[i + 1][i + length - 2]):
+                    palindrome[i][i + length - 1] = True
+                    ans += 1
+
+        return ans
 """
