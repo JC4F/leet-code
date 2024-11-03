@@ -1,3 +1,8 @@
+"""
+Relaxing Edges N-1 times là worst-case to find the best optimal
+=> N times mà change là có negative cycle
+"""
+
 # Python3 program for Bellman-Ford's single source
 # shortest path algorithm.
 
@@ -38,7 +43,6 @@ class Graph:
             for u, v, w in self.graph:
                 if dist[u] != float("Inf") and dist[u] + w < dist[v]:
                     dist[v] = dist[u] + w
-            self.printArr(dist)
 
         # Step 3: check for negative-weight cycles. The above step
         # guarantees shortest distances if graph doesn't contain
