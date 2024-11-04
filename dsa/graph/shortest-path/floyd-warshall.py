@@ -1,7 +1,7 @@
 '''
 dijkstra: from one node to all nodes
 bellman-ford: from one node to all nodes, allow negative edges
-floyd-warshall: between all pairs of vertices, allow negative edges
+floyd-warshall: between all pairs of vertices, allow negative edges * dynamic programming ~ find min của các bài toán con nhỏ trước rồi cộng dần lên
 '''
 
 # Python3 Program for Floyd Warshall Algorithm
