@@ -1,73 +1,44 @@
-# Python3 program for Bellman-Ford's single source
-# shortest path algorithm.
+class Trie:
+    def __init__(self):
+        # Root node with children and a flag indicating if it's the end of a word
+        self.children = {}
+        self.is_word = False
 
-# Class to represent a graph
+    def insert(self, word):
+        """Insert a word into the Trie."""
+        node = self
+        for char in word:
+            # If the character is not in the children, add a new Trie node
+            if char not in node.children:
+                node.children[char] = Trie()
+            node = node.children[char]
+        # Mark the end of the word
+        node.is_word = True
 
+    def search(self, word):
+        """Return True if the word is in the Trie, False otherwise."""
+        node = self._find_node(word)
+        # Check if we found the node and it's marked as a complete word
+        return node is not None and node.is_word
 
-class Graph:
-    def __init__(self, vertices):
-        self.V = vertices  # No. of vertices
-        self.graph = []
+    def starts_with(self, prefix):
+        """Return True if there is any word in the Trie that starts with the given prefix."""
+        # Check if the prefix exists in the Trie
+        return self._find_node(prefix) is not None
 
-    # function to add an edge to graph
-    def addEdge(self, u, v, w):
-        self.graph.append([u, v, w])
-
-    # utility function used to print the solution
-    def printArr(self, dist):
-        print("Vertex Distance from Source")
-        for i in range(self.V):
-            print("{0}\t\t{1}".format(i, dist[i]))
-
-    # The main function that finds shortest distances from src to
-    # all other vertices using Bellman-Ford algorithm. The function
-    # also detects negative weight cycle
-    def BellmanFord(self, src):
-        # Step 1: Initialize distances from src to all other vertices
-        # as INFINITE
-        dist = [float("Inf")] * self.V
-        dist[src] = 0
-
-        # Step 2: Relax all edges |V| - 1 times. A simple shortest
-        # path from src to any other vertex can have at-most |V| - 1
-        # edges
-        for _ in range(self.V - 1):
-            # Update dist value and parent index of the adjacent vertices of
-            # the picked vertex. Consider only those vertices which are still in
-            # queue
-            for u, v, w in self.graph:
-                if dist[u] != float("Inf") and dist[u] + w < dist[v]:
-                    dist[v] = dist[u] + w
-            self.printArr(dist)
-
-        # Step 3: check for negative-weight cycles. The above step
-        # guarantees shortest distances if graph doesn't contain
-        # negative weight cycle. If we get a shorter path, then there
-        # is a cycle.
-
-        for u, v, w in self.graph:
-            if dist[u] != float("Inf") and dist[u] + w < dist[v]:
-                print("Graph contains negative weight cycle")
-                return
-
-        # print all distance
-        self.printArr(dist)
+    def _find_node(self, prefix):
+        """Helper method to traverse the Trie and return the node corresponding to the prefix."""
+        node = self
+        for char in prefix:
+            if char not in node.children:
+                return None
+            node = node.children[char]
+        return node
 
 
-# Driver's code
-if __name__ == "__main__":
-    g = Graph(5)
-    g.addEdge(0, 1, -1)
-    g.addEdge(0, 2, 4)
-    g.addEdge(1, 2, 3)
-    g.addEdge(1, 3, 2)
-    g.addEdge(1, 4, 2)
-    g.addEdge(3, 2, 5)
-    g.addEdge(3, 1, 1)
-    g.addEdge(4, 3, -3)
-
-    # function call
-    g.BellmanFord(0)
-
-# Initially, Contributed by Neelam Yadav
-# Later On, Edited by Himanshu Garg
+# Example usage:
+trie = Trie()
+trie.insert("somestring")
+print(trie.search("somestring"))  # Output: True
+print(trie.search("key"))  # Output: False
+print(trie.starts_with("some"))  # Output: True
