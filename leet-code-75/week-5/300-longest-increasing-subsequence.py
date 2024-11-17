@@ -27,9 +27,10 @@ Complexity
 Time: O(N^2), where N <= 2500 is the number of elements in array nums.
 Space: O(N)
 """
+# https://leetcode.com/problems/longest-increasing-subsequence/solutions/1326308/c-python-dp-binary-search-bit-segment-tree-solutions-picture-explain-o-nlogn/
 
-
-from ast import List  # noqa: E402
+from ast import List
+from bisect import bisect_left  # noqa: E402
 
 
 class Solution:  # 2516 ms, faster than 64.96%
@@ -41,3 +42,58 @@ class Solution:  # 2516 ms, faster than 64.96%
                 if nums[i] > nums[j] and dp[i] < dp[j] + 1:
                     dp[i] = dp[j] + 1
         return max(dp)
+
+
+# Solution 2: Greedy with Binary Search
+"""
+Complexity:
+
+Time: O(N * logN)
+Space: O(N)
+"""
+
+
+class Solution:  # 68 ms, faster than 93.92%
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        sub = []
+        for x in nums:
+            if len(sub) == 0 or sub[-1] < x:
+                sub.append(x)
+            else:
+                idx = bisect_left(sub, x)  # Find the index of the first element >= x
+                sub[idx] = x  # Replace that number with x
+        return len(sub)
+
+
+# Get Longest Increasing Subsequence Path
+class Solution:
+    def pathOfLIS(self, nums: List[int]):
+        sub = []
+        subIndex = []  # Store index instead of value for tracing path purpose
+        trace = [-1] * len(
+            nums
+        )  # trace[i] point to the index of previous number in LIS
+        for i, x in enumerate(nums):
+            if len(sub) == 0 or sub[-1] < x:
+                if subIndex:
+                    trace[i] = subIndex[-1]
+                sub.append(x)
+                subIndex.append(i)
+            else:
+                idx = bisect_left(
+                    sub, x
+                )  # Find the index of the smallest number >= x, replace that number with x
+                if idx > 0:
+                    trace[i] = subIndex[idx - 1]
+                sub[idx] = x
+                subIndex[idx] = i
+
+        path = []
+        t = subIndex[-1]
+        while t >= 0:
+            path.append(nums[t])
+            t = trace[t]
+        return path[::-1]
+
+
+print(Solution().pathOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
