@@ -1,36 +1,31 @@
-from bisect import bisect_left
 from typing import List
 
 
-class Solution:
-    def pathOfLIS(self, nums: List[int]):
-        sub = []
-        subIndex = []  # Store index instead of value for tracing path purpose
-        trace = [-1] * len(
-            nums
-        )  # trace[i] point to the index of previous number in LIS
-        for i, x in enumerate(nums):
-            if len(sub) == 0 or sub[-1] < x:
-                if subIndex:
-                    trace[i] = subIndex[-1]
-                sub.append(x)
-                subIndex.append(i)
-            else:
-                idx = bisect_left(
-                    sub, x
-                )  # Find the index of the smallest number >= x, replace that number with x
-                if idx > 0:
-                    trace[i] = subIndex[idx - 1]
-                sub[idx] = x
-                subIndex[idx] = i
+class MaxBIT:  # One-based indexing
+    def __init__(self, size):
+        self.bit = [0] * (size + 1)
 
-        path = []
-        t = subIndex[-1]
+    def get(self, idx):
+        ans = 0
+        while idx > 0:
+            ans = max(ans, self.bit[idx])
+            idx -= idx & (-idx)
+        return ans
 
-        while t >= 0:
-            path.append(nums[t])
-            t = trace[t]
-        return path[::-1]
+    def update(self, idx, val):
+        while idx < len(self.bit):
+            self.bit[idx] = max(self.bit[idx], val)
+            idx += idx & (-idx)
 
 
-print(Solution().pathOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
+class Solution:  # 360 ms, faster than 69.28%
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        bit = MaxBIT(20001)
+        BASE = 10001
+        for x in nums:
+            subLongest = bit.get(BASE + x - 1)
+            bit.update(BASE + x, subLongest + 1)
+        return bit.get(20001)
+
+
+print(Solution().lengthOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
