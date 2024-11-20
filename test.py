@@ -1,31 +1,60 @@
+from bisect import bisect_left
 from typing import List
 
 
-class MaxBIT:  # One-based indexing
-    def __init__(self, size):
-        self.bit = [0] * (size + 1)
+class SegmentTree:
+    def __init__(self, n):
+        self.n = n
+        self.tree = [0] * 4 * self.n
 
-    def get(self, idx):
-        ans = 0
-        while idx > 0:
-            ans = max(ans, self.bit[idx])
-            idx -= idx & (-idx)
-        return ans
+    # query (qleft, qright) to find maximum elements in range [qleft...qright]
+    def query(self, left, right, index, qleft, qright):
+        if qright < left or qleft > right:
+            return 0
 
-    def update(self, idx, val):
-        while idx < len(self.bit):
-            self.bit[idx] = max(self.bit[idx], val)
-            idx += idx & (-idx)
+        if qleft <= left and right <= qright:
+            return self.tree[index]
+
+        mid = (left + right) // 2
+        resLeft = self.query(left, mid, 2 * index + 1, qleft, qright)
+        resRight = self.query(mid + 1, right, 2 * index + 2, qleft, qright)
+        return max(resLeft, resRight)
+
+    # update an element at `pos` to `val`
+    def update(self, left, right, index, pos, val):
+        if left == right:
+            self.tree[index] = val
+            return
+
+        mid = (left + right) // 2
+        if pos <= mid:
+            self.update(left, mid, 2 * index + 1, pos, val)
+        else:
+            self.update(mid + 1, right, 2 * index + 2, pos, val)
+        self.tree[index] = max(self.tree[2 * index + 1], self.tree[2 * index + 2])
 
 
-class Solution:  # 360 ms, faster than 69.28%
+class Solution:
     def lengthOfLIS(self, nums: List[int]) -> int:
-        bit = MaxBIT(20001)
-        BASE = 10001
+        def compress(
+            arr,
+        ):  # Example: [1, 9999, 20, 10, 20] -> Expected: [0, 3, 2, 1, 2]
+            sortedArr = sorted(arr)
+            ans = []
+            for x in arr:
+                ans.append(bisect_left(sortedArr, x))
+            return ans
+
+        nums = compress(nums)
+        print(nums)
+        n = len(nums)
+        segmentTree = SegmentTree(n)
         for x in nums:
-            subLongest = bit.get(BASE + x - 1)
-            bit.update(BASE + x, subLongest + 1)
-        return bit.get(20001)
+            subLongest = segmentTree.query(0, n - 1, 0, 0, x - 1)
+            segmentTree.update(0, n - 1, 0, x, subLongest + 1)
+
+        print(segmentTree.tree)
+        return segmentTree.query(0, n - 1, 0, 0, n - 1)
 
 
 print(Solution().lengthOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]

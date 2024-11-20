@@ -136,8 +136,42 @@ class Solution:  # 360 ms, faster than 69.28%
 
 print(Solution().lengthOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
 
+
 #  Solution 4: Binary Indexed Tree (Compress nums into values in [1...N])
 # quite hard ^_^
+# class MaxBIT:  # One-based indexing
+#     def __init__(self, size):
+#         self.bit = [0] * (size + 1)
+
+#     def get(self, idx):
+#         ans = 0
+#         while idx > 0:
+#             ans = max(ans, self.bit[idx])
+#             idx -= idx & (-idx)
+#         return ans
+
+#     def update(self, idx, val):
+#         while idx < len(self.bit):
+#             self.bit[idx] = max(self.bit[idx], val)
+#             idx += idx & (-idx)
+
+
+# class Solution:  # 188 ms, faster than 69.99%
+#     def lengthOfLIS(self, nums: List[int]) -> int:
+#         def compress(arr):  # For example: [1, 9999, 20, 10, 20]
+#             uniqueSorted = sorted(set(arr))
+#             for i in range(len(arr)):
+#                 arr[i] = (
+#                     bisect_left(uniqueSorted, arr[i]) + 1
+#                 )  # Result: [1, 4, 3, 2, 3]
+#             return len(uniqueSorted)
+
+#         nUnique = compress(nums)
+#         bit = MaxBIT(nUnique)
+#         for x in nums:
+#             subLongest = bit.get(x - 1)
+#             bit.update(x, subLongest + 1)
+#         return bit.get(nUnique)
 
 
 #  Solution 5: Segment Tree
