@@ -60,3 +60,36 @@ class Solution:
 #             for j in range(1, n):
 #                 dp[i & 1][j] = dp[(i - 1) & 1][j] + dp[i & 1][j - 1]
 #         return dp[(m - 1) & 1][-1]
+
+"""
+The above solution runs in O(m * n) time and costs O(m * n) space. However, you may have noticed that each time when we update dp[i][j], we only need dp[i - 1][j] (at the previous row) and dp[i][j - 1] (at the current row). So we can reduce the memory usage to just two rows (O(n)).
+
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<int> pre(n, 1), cur(n, 1);
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                cur[j] = pre[j] + cur[j - 1];
+            }
+            swap(pre, cur);
+        }
+        return pre[n - 1];
+    }
+};
+
+Further inspecting the above code, pre[j] is just the cur[j] before the update. So we can further reduce the memory usage to one row.
+
+class Solution {
+public:
+    int uniquePaths(int m, int n) {
+        vector<int> cur(n, 1);
+        for (int i = 1; i < m; i++) {
+            for (int j = 1; j < n; j++) {
+                cur[j] += cur[j - 1];
+            }
+        }
+        return cur[n - 1];
+    }
+};
+"""
