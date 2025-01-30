@@ -25,7 +25,8 @@ Output: [2,8,4,6]
 
 """
 1. Brute force
-
+Time complexity: O(n)
+Space complexity: O(n)
 """
 # Definition for singly-linked list.
 # class ListNode:
@@ -59,6 +60,8 @@ class Solution:
 
 """
 2. Recursion
+Time complexity: O(n)
+Space complexity: O(n)
 """
 
 
@@ -81,3 +84,35 @@ class Solution:
             return tmp
 
         head = rec(head, head.next)
+
+
+"""
+3. Reverse And Merge
+Time complexity: O(n)
+Space complexity: O(1)
+"""
+
+
+class Solution:
+    def reorderList(self, head: Optional[ListNode]) -> None:
+        slow, fast = head, head.next
+        while fast and fast.next:
+            slow = slow.next
+            fast = fast.next.next
+
+        # reverse second list
+        second = slow.next
+        prev = slow.next = None
+        while second:
+            tmp = second.next
+            second.next = prev
+            prev = second
+            second = tmp
+
+        # merge two lists
+        first, second = head, prev
+        while second:
+            tmp1, tmp2 = first.next, second.next
+            first.next = second
+            second.next = tmp1
+            first, second = tmp1, tmp2
