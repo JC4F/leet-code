@@ -1,54 +1,60 @@
 """
-Time: O(N) - for DFS
-Space: O(N) - for the recursive stack
+1. Recursive DFS
+Time complexity: O(n)
+Space complexity: O(h): O(log(n)) -> O(n)
 """
-
-from typing import Optional
-
-
-class TreeNode(object):
-    def __init__(self, val=0, left=None, right=None):
-        self.val = val
-        self.left = left
-        self.right = right
 
 
 class Solution:
     def maxDepth(self, root: Optional[TreeNode]) -> int:
-        def dfs(root, depth):
-            if not root:
-                return depth
-            return max(dfs(root.left, depth + 1), dfs(root.right, depth + 1))
+        if not root:
+            return 0
 
-        return dfs(root, 0)
+        return 1 + max(self.maxDepth(root.left), self.maxDepth(root.right))
 
 
 """
-BFS:
-
-int maxDepth(TreeNode *root)
-{
-    if(root == NULL)
-        return 0;
-    
-    int res = 0;
-    queue<TreeNode *> q;
-    q.push(root);
-    while(!q.empty())
-    {
-        ++ res;
-        for(int i = 0, n = q.size(); i < n; ++ i)
-        {
-            TreeNode *p = q.front();
-            q.pop();
-            
-            if(p -> left != NULL)
-                q.push(p -> left);
-            if(p -> right != NULL)
-                q.push(p -> right);
-        }
-    }
-    
-    return res;
-}
+2. Iterative DFS (stack)
+Time complexity: O(n)
+Space complexity: O(n)
 """
+
+
+class Solution:
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        stack = [[root, 1]]
+        res = 0
+
+        while stack:
+            node, depth = stack.pop()
+
+            if node:
+                res = max(res, depth)
+                stack.append([node.left, depth + 1])
+                stack.append([node.right, depth + 1])
+        return res
+
+
+"""
+3. BFS (queue)
+Time complexity: O(n)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def maxDepth(self, root: Optional[TreeNode]) -> int:
+        q = deque()
+        if root:
+            q.append(root)
+
+        level = 0
+        while q:
+            for i in range(len(q)):
+                node = q.popleft()
+                if node.left:
+                    q.append(node.left)
+                if node.right:
+                    q.append(node.right)
+            level += 1
+        return level
