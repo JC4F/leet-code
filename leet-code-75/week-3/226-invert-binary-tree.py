@@ -1,76 +1,69 @@
-'''
-As in many other cases this problem has more than one possible solutions:
+# Definition for a binary tree node.
+# class TreeNode:
+#     def __init__(self, val=0, left=None, right=None):
+#         self.val = val
+#         self.left = left
+#         self.right = right
 
-Lets start with straightforward - recursive DFS - it's easy to write and pretty much concise.
+"""
+1. BFS
+Time complexity: O(n)
+Space complexity: O(n)
+"""
 
-public class Solution {
-    public TreeNode invertTree(TreeNode root) {
-        
-        if (root == null) {
-            return null;
-        }
 
-        final TreeNode left = root.left,
-                right = root.right;
-        root.left = invertTree(right);
-        root.right = invertTree(left);
-        return root;
-    }
-}
-The above solution is correct, but it is also bound to the application stack, which means that it's no so much scalable - (you can find the problem size that will overflow the stack and crash your application), so more robust solution would be to use stack data structure.
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return None
+        queue = deque([root])
+        while queue:
+            node = queue.popleft()
+            node.left, node.right = node.right, node.left
+            if node.left:
+                queue.append(node.left)
+            if node.right:
+                queue.append(node.right)
+        return root
 
-public class Solution {
-    public TreeNode invertTree(TreeNode root) {
-        
-        if (root == null) {
-            return null;
-        }
 
-        final Deque<TreeNode> stack = new LinkedList<>();
-        stack.push(root);
-        
-        while(!stack.isEmpty()) {
-            final TreeNode node = stack.pop();
-            final TreeNode left = node.left;
-            node.left = node.right;
-            node.right = left;
-            
-            if(node.left != null) {
-                stack.push(node.left);
-            }
-            if(node.right != null) {
-                stack.push(node.right);
-            }
-        }
-        return root;
-    }
-}
-Finally we can easly convert the above solution to BFS - or so called level order traversal.
+"""
+2. DFS
+Time complexity: O(n)
+Space complexity: O(h)
+"""
 
-public class Solution {
-    public TreeNode invertTree(TreeNode root) {
-        
-        if (root == null) {
-            return null;
-        }
 
-        final Queue<TreeNode> queue = new LinkedList<>();
-        queue.offer(root);
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return None
 
-        while(!queue.isEmpty()) {
-            final TreeNode node = queue.poll();
-            final TreeNode left = node.left;
-            node.left = node.right;
-            node.right = left;
+        root.left, root.right = root.right, root.left
 
-            if(node.left != null) {
-                queue.offer(node.left);
-            }
-            if(node.right != null) {
-                queue.offer(node.right);
-            }
-        }
-        return root;
-    }
-}
-'''
+        self.invertTree(root.left)
+        self.invertTree(root.right)
+
+        return root
+
+
+"""
+3. Iterative DFS
+Time complexity: O(n)
+Space complexity: O(h)
+"""
+
+
+class Solution:
+    def invertTree(self, root: Optional[TreeNode]) -> Optional[TreeNode]:
+        if not root:
+            return None
+        stack = [root]
+        while stack:
+            node = stack.pop()
+            node.left, node.right = node.right, node.left
+            if node.left:
+                stack.append(node.left)
+            if node.right:
+                stack.append(node.right)
+        return root
