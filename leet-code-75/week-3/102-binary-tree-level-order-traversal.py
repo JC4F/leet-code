@@ -1,42 +1,52 @@
 """
-Solution 1: Java solution using queue
-public class Solution {
-    public List<List<Integer>> levelOrder(TreeNode root) {
-        Queue<TreeNode> queue = new LinkedList<TreeNode>();
-        List<List<Integer>> wrapList = new LinkedList<List<Integer>>();
-
-        if(root == null) return wrapList;
-
-        queue.offer(root);
-        while(!queue.isEmpty()){
-            int levelNum = queue.size();
-            List<Integer> subList = new LinkedList<Integer>();
-            for(int i=0; i<levelNum; i++) {
-                if(queue.peek().left != null) queue.offer(queue.peek().left);
-                if(queue.peek().right != null) queue.offer(queue.peek().right);
-                subList.add(queue.poll().val);
-            }
-            wrapList.add(subList);
-        }
-        return wrapList;
-    }
-}
-
-Solution 2: another BFS
-
-public List<List<Integer>> levelOrder(TreeNode root) {
-        List<List<Integer>> res = new ArrayList<List<Integer>>();
-        levelHelper(res, root, 0);
-        return res;
-    }
-
-    public void levelHelper(List<List<Integer>> res, TreeNode root, int height) {
-        if (root == null) return;
-        if (height >= res.size()) {
-            res.add(new LinkedList<Integer>());
-        }
-        res.get(height).add(root.val);
-        levelHelper(res, root.left, height+1);
-        levelHelper(res, root.right, height+1);
-    }
+1. DFS
+Time complexity: O(n)
+Space complexity: O(n)
 """
+
+
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        res = []
+
+        def dfs(node, depth):
+            if not node:
+                return None
+            if len(res) == depth:
+                res.append([])
+
+            res[depth].append(node.val)
+            dfs(node.left, depth + 1)
+            dfs(node.right, depth + 1)
+
+        dfs(root, 0)
+        return res
+
+
+"""
+2. BFS
+Time complexity: O(n)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def levelOrder(self, root: Optional[TreeNode]) -> List[List[int]]:
+        res = []
+
+        q = collections.deque()
+        q.append(root)
+
+        while q:
+            qLen = len(q)
+            level = []
+            for i in range(qLen):
+                node = q.popleft()
+                if node:
+                    level.append(node.val)
+                    q.append(node.left)
+                    q.append(node.right)
+            if level:
+                res.append(level)
+
+        return res
