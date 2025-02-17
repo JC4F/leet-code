@@ -1,47 +1,37 @@
 # solution 1: DFS in-order recursive
-"""
-// better keep these two variables in a wrapper class
-private static int number = 0;
-private static int count = 0;
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        cnt = k
+        res = root.val
 
-public int kthSmallest(TreeNode root, int k) {
-    count = k;
-    helper(root);
-    return number;
-}
+        def dfs(node):
+            nonlocal cnt, res
+            if not node:
+                return
 
-public void helper(TreeNode n) {
-    if (n.left != null) helper(n.left);
-    count--;
-    if (count == 0) {
-        number = n.val;
-        return;
-    }
-    if (n.right != null) helper(n.right);
-}
-"""
+            dfs(node.left)
+            cnt -= 1
+            if cnt == 0:
+                res = node.val
+                return
+            dfs(node.right)
+
+        dfs(root)
+        return res
+
 
 # solution 2: DFS in-order iterative
-"""
-public int kthSmallest(TreeNode root, int k) {
-      Stack<TreeNode> st = new Stack<>();
-      
-      while (root != null) {
-          st.push(root);
-          root = root.left;
-      }
-          
-      while (k != 0) {
-          TreeNode n = st.pop();
-          k--;
-          if (k == 0) return n.val;
-          TreeNode right = n.right;
-          while (right != null) {
-              st.push(right);
-              right = right.left;
-          }
-      }
-      
-      return -1; // never hit if k is valid
-}
-"""
+class Solution:
+    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:
+        stack = []
+        curr = root
+
+        while stack or curr:
+            while curr:
+                stack.append(curr)
+                curr = curr.left
+            curr = stack.pop()
+            k -= 1
+            if k == 0:
+                return curr.val
+            curr = curr.right
