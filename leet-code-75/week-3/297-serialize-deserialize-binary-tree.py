@@ -1,77 +1,84 @@
-'''
-The idea is simple: print the tree in pre-order traversal and use "X" to denote null node and split node with ",". 
-We can use a StringBuilder for building the string on the fly. 
-For deserializing, we use a Queue to store the pre-order traversal and since we have "X" as null node, we know exactly how to where to end building subtress.
-
-public class Codec {
-    private static final String spliter = ",";
-    private static final String NN = "X";
-
-    // Encodes a tree to a single string.
-    public String serialize(TreeNode root) {
-        StringBuilder sb = new StringBuilder();
-        buildString(root, sb);
-        return sb.toString();
-    }
-
-    private void buildString(TreeNode node, StringBuilder sb) {
-        if (node == null) {
-            sb.append(NN).append(spliter);
-        } else {
-            sb.append(node.val).append(spliter);
-            buildString(node.left, sb);
-            buildString(node.right,sb);
-        }
-    }
-    // Decodes your encoded data to tree.
-    public TreeNode deserialize(String data) {
-        Deque<String> nodes = new LinkedList<>();
-        nodes.addAll(Arrays.asList(data.split(spliter)));
-        return buildTree(nodes);
-    }
-    
-    private TreeNode buildTree(Deque<String> nodes) {
-        String val = nodes.remove();
-        if (val.equals(NN)) return null;
-        else {
-            TreeNode node = new TreeNode(Integer.valueOf(val));
-            node.left = buildTree(nodes);
-            node.right = buildTree(nodes);
-            return node;
-        }
-    }
-}
-'''
-
-class TreeNode(object):
-    def __init__(self, x):
-        self.val = x
-        self.left = None
-        self.right = None
+"""
+1. DFS
+Time complexity: O(n)
+Space complexity: O(n)
+"""
 
 
 class Codec:
+    # Encodes a tree to a single string.
+    def serialize(self, root: Optional[TreeNode]) -> str:
+        res = []
 
-    def serialize(self, root):
-        def doit(node):
-            if node:
-                vals.append(str(node.val))
-                doit(node.left)
-                doit(node.right)
-            else:
-                vals.append('#')
-        vals = []
-        doit(root)
-        return ' '.join(vals)
+        def dfs(node):
+            if not node:
+                res.append("N")
+                return
+            res.append(str(node.val))
+            dfs(node.left)
+            dfs(node.right)
 
-    def deserialize(self, data):
-        def doit():
-            val = next(vals)
-            if val == '#':
+        dfs(root)
+        return ",".join(res)
+
+    # Decodes your encoded data to tree.
+    def deserialize(self, data: str) -> Optional[TreeNode]:
+        vals = data.split(",")
+        self.i = 0
+
+        def dfs():
+            if vals[self.i] == "N":
+                self.i += 1
                 return None
-            node = TreeNode(int(val))
-            node.left = doit()
-            node.right = doit()
+            node = TreeNode(int(vals[self.i]))
+            self.i += 1
+            node.left = dfs()
+            node.right = dfs()
             return node
-        vals = iter(data.split())
-        return doit()
+
+        return dfs()
+
+
+"""
+2. BFS
+Time complexity: O(n)
+Space complexity: O(n)
+"""
+
+
+class Codec:
+    # Encodes a tree to a single string.
+    def serialize(self, root: Optional[TreeNode]) -> str:
+        if not root:
+            return "N"
+        res = []
+        queue = deque([root])
+        while queue:
+            node = queue.popleft()
+            if not node:
+                res.append("N")
+            else:
+                res.append(str(node.val))
+                queue.append(node.left)
+                queue.append(node.right)
+        return ",".join(res)
+
+    # Decodes your encoded data to tree.
+    def deserialize(self, data: str) -> Optional[TreeNode]:
+        vals = data.split(",")
+        if vals[0] == "N":
+            return None
+        root = TreeNode(int(vals[0]))
+        queue = deque([root])
+        index = 1
+        while queue:
+            node = queue.popleft()
+            if vals[index] != "N":
+                node.left = TreeNode(int(vals[index]))
+                queue.append(node.left)
+            index += 1
+            if vals[index] != "N":
+                node.right = TreeNode(int(vals[index]))
+                queue.append(node.right)
+            index += 1
+        return root
