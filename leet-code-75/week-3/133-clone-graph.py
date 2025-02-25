@@ -18,48 +18,69 @@ For simplicity, each node's value is the same as the node's index (1-indexed). F
 An adjacency list is a collection of unordered lists used to represent a finite graph. Each list describes the set of neighbors of a node in the graph.
 
 The given node will always be the first node with val = 1. You must return the copy of the given node as a reference to the cloned graph.
+"""
 
-===>
-To solve this problem we need two things:
+"""
+1. DFS
+Time complexity: O(V + E)
+Space complexity: O(V)
+"""
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, val = 0, neighbors = None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+"""
 
-BFS/DFS to traverse the graph
-A hash map to keep track of already visited and already cloned nodes
 
-Solution 1: DFS
-public UndirectedGraphNode cloneGraph(UndirectedGraphNode node) {
-    HashMap<Integer,UndirectedGraphNode> map = new HashMap<Integer,UndirectedGraphNode>();
-    return dfs(node,map);
-}
-private UndirectedGraphNode dfs(UndirectedGraphNode node, HashMap<Integer,UndirectedGraphNode> map) {
-    if (node == null) return null;
-    if (map.containsKey(node.label)) {
-        return map.get(node.label);
-    } else {
-        UndirectedGraphNode clone = new UndirectedGraphNode(node.label);
-        map.put(node.label,clone);
-        for (int i = 0; i < node.neighbors.size(); i++) {
-            clone.neighbors.add(dfs(node.neighbors.get(i), map));
-        }
-        return clone;
-    }
-}
-
-Solution 2: BFS
 class Solution:
-    def cloneGraph(self, node: 'Node') -> 'Node':
-        if not node: return node
+    def cloneGraph(self, node: Optional["Node"]) -> Optional["Node"]:
+        oldToNew = {}
 
-        q, clones = deque([node]), {node.val: Node(node.val, [])}
+        def dfs(node):
+            if node in oldToNew:
+                return oldToNew[node]
+
+            copy = Node(node.val)
+            oldToNew[node] = copy
+            for nei in node.neighbors:
+                copy.neighbors.append(dfs(nei))
+            return copy
+
+        return dfs(node) if node else None
+
+
+"""
+2. BFS
+Time complexity: O(V + E)
+Space complexity: O(V)
+"""
+
+"""
+# Definition for a Node.
+class Node:
+    def __init__(self, val = 0, neighbors = None):
+        self.val = val
+        self.neighbors = neighbors if neighbors is not None else []
+"""
+
+
+class Solution:
+    def cloneGraph(self, node: Optional["Node"]) -> Optional["Node"]:
+        if not node:
+            return None
+
+        oldToNew = {}
+        oldToNew[node] = Node(node.val)
+        q = deque([node])
+
         while q:
             cur = q.popleft()
-            cur_clone = clones[cur.val]
+            for nei in cur.neighbors:
+                if nei not in oldToNew:
+                    oldToNew[nei] = Node(nei.val)
+                    q.append(nei)
+                oldToNew[cur].neighbors.append(oldToNew[nei])
 
-            for ngbr in cur.neighbors:
-                if ngbr.val not in clones:
-                    clones[ngbr.val] = Node(ngbr.val, [])
-                    q.append(ngbr)
-
-                cur_clone.neighbors.append(clones[ngbr.val])
-
-        return clones[node.val]
-"""
+        return oldToNew[node]
