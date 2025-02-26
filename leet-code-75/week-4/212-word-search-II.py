@@ -12,52 +12,87 @@ Output: []
 """
 
 """
-Backtracking + Trie
-
-public List<String> findWords(char[][] board, String[] words) {
-    List<String> res = new ArrayList<>();
-    TrieNode root = buildTrie(words);
-    for (int i = 0; i < board.length; i++) {
-        for (int j = 0; j < board[0].length; j++) {
-            dfs (board, i, j, root, res);
-        }
-    }
-    return res;
-}
-
-public void dfs(char[][] board, int i, int j, TrieNode p, List<String> res) {
-    char c = board[i][j];
-    if (c == '#' || p.next[c - 'a'] == null) return;
-    p = p.next[c - 'a'];
-    if (p.word != null) {   // found one
-        res.add(p.word);
-        p.word = null;     // de-duplicate
-    }
-
-    board[i][j] = '#';
-    if (i > 0) dfs(board, i - 1, j ,p, res); 
-    if (j > 0) dfs(board, i, j - 1, p, res);
-    if (i < board.length - 1) dfs(board, i + 1, j, p, res); 
-    if (j < board[0].length - 1) dfs(board, i, j + 1, p, res); 
-    board[i][j] = c;
-}
-
-public TrieNode buildTrie(String[] words) {
-    TrieNode root = new TrieNode();
-    for (String w : words) {
-        TrieNode p = root;
-        for (char c : w.toCharArray()) {
-            int i = c - 'a';
-            if (p.next[i] == null) p.next[i] = new TrieNode();
-            p = p.next[i];
-       }
-       p.word = w;
-    }
-    return root;
-}
-
-class TrieNode {
-    TrieNode[] next = new TrieNode[26];
-    String word;
-}
+1. Backtracking
+Time complexity: O((mn) * 4^l), where m is the number of rows, n is the number of columns, and l is the maximum length of a word.
+Space complexity: O(l)
 """
+
+
+class Solution:
+    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
+        ROWS, COLS = len(board), len(board[0])
+        res = []
+
+        def backtrack(r, c, i):
+            if i == len(word):
+                return True
+            if r < 0 or c < 0 or r >= ROWS or c >= COLS or board[r][c] != word[i]:
+                return False
+
+            board[r][c] = "*"
+            ret = (
+                backtrack(r + 1, c, i + 1)
+                or backtrack(r - 1, c, i + 1)
+                or backtrack(r, c + 1, i + 1)
+                or backtrack(r, c - 1, i + 1)
+            )
+            board[r][c] = word[i]
+            return ret
+
+        for word in words:
+            flag = False
+            for r in range(ROWS):
+                if flag:
+                    break
+                for c in range(COLS):
+                    if board[r][c] != word[0]:
+                        continue
+                    if backtrack(r, c, 0):
+                        res.append(word)
+                        flag = True
+                        break
+        return res
+
+
+"""
+2. Backtracking (Trie + Hash Set)
+"""
+
+
+class Solution:
+    def findWords(self, board: List[List[str]], words: List[str]) -> List[str]:
+        root = TrieNode()
+        for w in words:
+            root.addWord(w)
+
+        ROWS, COLS = len(board), len(board[0])
+        res, visit = set(), set()
+
+        def dfs(r, c, node, word):
+            if (
+                r < 0
+                or c < 0
+                or r >= ROWS
+                or c >= COLS
+                or (r, c) in visit
+                or board[r][c] not in node.children
+            ):
+                return
+
+            visit.add((r, c))
+            node = node.children[board[r][c]]
+            word += board[r][c]
+            if node.isWord:
+                res.add(word)
+
+            dfs(r + 1, c, node, word)
+            dfs(r - 1, c, node, word)
+            dfs(r, c + 1, node, word)
+            dfs(r, c - 1, node, word)
+            visit.remove((r, c))
+
+        for r in range(ROWS):
+            for c in range(COLS):
+                dfs(r, c, root, "")
+
+        return list(res)
