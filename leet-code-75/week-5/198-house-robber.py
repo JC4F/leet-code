@@ -18,77 +18,81 @@ Total amount you can rob = 2 + 9 + 1 = 12.
 """
 
 """
-Find recursive relation
-Recursive (top-down)
-Recursive + memo (top-down)
-Iterative + memo (bottom-up)
-Iterative + N variables (bottom-up)
-"""
-# Step 1:  Figure out recursive relation.
-# rob(i) = Math.max( rob(i - 2) + currentHouseValue, rob(i - 1) )
-
-# Step 2: Recursive (top-down)
-"""
-public int rob(int[] nums) {
-    return rob(nums, nums.length - 1);
-}
-private int rob(int[] nums, int i) {
-    if (i < 0) {
-        return 0;
-    }
-    return Math.max(rob(nums, i - 2) + nums[i], rob(nums, i - 1));
-}
+1. Recursion
+Time complexity: O(2^n)
+Space complexity: O(n)
 """
 
-# Step 3: Recursive + memo (top-down)
-"""
-int[] memo;
-public int rob(int[] nums) {
-    memo = new int[nums.length + 1];
-    Arrays.fill(memo, -1);
-    return rob(nums, nums.length - 1);
-}
 
-private int rob(int[] nums, int i) {
-    if (i < 0) {
-        return 0;
-    }
-    if (memo[i] >= 0) {
-        return memo[i];
-    }
-    int result = Math.max(rob(nums, i - 2) + nums[i], rob(nums, i - 1));
-    memo[i] = result;
-    return result;
-}
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        def dfs(i):
+            if i >= len(nums):
+                return 0
+            return max(dfs(i + 1), nums[i] + dfs(i + 2))
+
+        return dfs(0)
+
+
+"""
+2. DP (Top-Down)
+Time complexity: O(n)
+Space complexity: O(n)
 """
 
-# Step 4: Iterative + memo (bottom-up)
+
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        memo = [-1] * len(nums)
+
+        def dfs(i):
+            if i >= len(nums):
+                return 0
+            if memo[i] != -1:
+                return memo[i]
+            memo[i] = max(dfs(i + 1), nums[i] + dfs(i + 2))
+            return memo[i]
+
+        return dfs(0)
+
+
 """
-public int rob(int[] nums) {
-    if (nums.length == 0) return 0;
-    int[] memo = new int[nums.length + 1];
-    memo[0] = 0;
-    memo[1] = nums[0];
-    for (int i = 1; i < nums.length; i++) {
-        int val = nums[i];
-        memo[i+1] = Math.max(memo[i], memo[i-1] + val);
-    }
-    return memo[nums.length];
-}
+3. DP (Bottom-Up)
+Time complexity: O(n)
+Space complexity: O(n)
 """
 
-# Step 5: Iterative + N variables (bottom-up)
+
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        if not nums:
+            return 0
+        if len(nums) == 1:
+            return nums[0]
+
+        dp = [0] * len(nums)
+        dp[0] = nums[0]
+        dp[1] = max(nums[0], nums[1])
+
+        for i in range(2, len(nums)):
+            dp[i] = max(dp[i - 1], nums[i] + dp[i - 2])
+
+        return dp[-1]
+
+
 """
-/* the order is: prev2, prev1, num  */
-public int rob(int[] nums) {
-    if (nums.length == 0) return 0;
-    int prev1 = 0;
-    int prev2 = 0;
-    for (int num : nums) {
-        int tmp = prev1;
-        prev1 = Math.max(prev2 + num, prev1);
-        prev2 = tmp;
-    }
-    return prev1;
-}
+4. DP (Space Optimized)
+Time complexity: O(n)
+ Space complexity: O(1)
 """
+
+
+class Solution:
+    def rob(self, nums: List[int]) -> int:
+        rob1, rob2 = 0, 0
+
+        for num in nums:
+            temp = max(num + rob1, rob2)
+            rob1 = rob2
+            rob2 = temp
+        return rob2
