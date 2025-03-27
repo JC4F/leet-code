@@ -17,96 +17,75 @@ Example 2:
 Input: s = "aaa"
 Output: 6
 Explanation: Six palindromic strings: "a", "a", "a", "aa", "aa", "aaa".
+"""
 
-===>
-
-Solution 1: Brute force
-class Solution {
-
-    public boolean isPalindrome(String s, int left, int right) {
-        while(left < right) {
-            if(s.charAt(left++) != s.charAt(right--)) return false;
-        }
-        return true;
-    }
-
-    public int countSubstrings(String s) {
-        int ans = 0;
-        int n = s.length();
-        for(int i=0;i<n;i++) {
-            for(int j=i;j<n;j++) {
-                if(isPalindrome(s, i, j)) ans++;
-            }
-        }
-        return ans;
-    }
-}
-
-Time Complexity would be O(n^3)
-Space Complexity would be O(1).
+"""
+1. Brute force
+Time complexity: O(n^3)
+Space complexity: O(n)
+"""
 
 
-Solution 2: Better
-class Solution {
-    public int countSubstrings(String s) {
-        int n = s.length();
-        int ans = 0;
-        for(int i=0;i<n;i++) {
-            int even = palindromeCount(s, i, i+1);
-            int odd = palindromeCount(s, i-1, i+1);
-            ans += even + odd + 1;
-        }
-        return ans;
-    }
-
-    public int palindromeCount(String s, int left, int right) {
-        int count = 0;
-        while(left >= 0 && right < s.length() && s.charAt(left--) == s.charAt(right++)) {
-            count++;
-        }
-        return count;
-    }
-}
-
-Time Complexity would be O(n^2)
-Space Complexity would be O(1).
-
-Solution 3: DP
 class Solution:
     def countSubstrings(self, s: str) -> int:
-        n = len(s)
-        palindrome = [[False] * n for _ in range(n)]
-        ans = 0
+        res = 0
 
-        for i in range(n):
-            palindrome[i][i] = True
-            ans += 1
+        for i in range(len(s)):
+            for j in range(i, len(s)):
+                l, r = i, j
+                while l < r and s[l] == s[r]:
+                    l += 1
+                    r -= 1
+                res += l >= r
 
-        for i in range(n - 1):
-            if s[i] == s[i + 1]:
-                palindrome[i][i + 1] = True
-                ans += 1
+        return res
 
-        for length in range(3, n + 1):
-            for i in range(n - length + 1):
-                if s[i] == s[i + length - 1] and palindrome[i + 1][i + length - 2]:
-                    palindrome[i][i + length - 1] = True
-                    ans += 1
 
-        return ans
-
-    ===> smaller 
-    class Solution:
-    def countSubstrings(self, s: str) -> int:
-        n = len(s)
-        palindrome = [[False] * n for _ in range(n)]
-        ans = 0
-
-        for length in range(1, n + 1):
-            for i in range(n - length + 1):
-                if s[i] == s[i + length - 1] and (length <= 2 or palindrome[i + 1][i + length - 2]):
-                    palindrome[i][i + length - 1] = True
-                    ans += 1
-
-        return ans
 """
+2. DP
+Time complexity: O(n^2)
+Space complexity: O(n^2)
+"""
+
+
+class Solution:
+    def countSubstrings(self, s: str) -> int:
+        n, res = len(s), 0
+        dp = [[False] * n for _ in range(n)]
+
+        for i in range(n - 1, -1, -1):
+            for j in range(i, n):
+                if s[i] == s[j] and (j - i <= 2 or dp[i + 1][j - 1]):
+                    dp[i][j] = True
+                    res += 1
+
+        return res
+
+
+"""
+3. Two pointer
+Time complexity: O(n^2)
+Space complexity: O(1)
+"""
+
+
+class Solution:
+    def countSubstrings(self, s: str) -> int:
+        res = 0
+
+        for i in range(len(s)):
+            # odd length
+            l, r = i, i
+            while l >= 0 and r < len(s) and s[l] == s[r]:
+                res += 1
+                l -= 1
+                r += 1
+
+            # even length
+            l, r = i, i + 1
+            while l >= 0 and r < len(s) and s[l] == s[r]:
+                res += 1
+                l -= 1
+                r += 1
+
+        return res
