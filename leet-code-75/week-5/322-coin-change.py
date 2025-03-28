@@ -21,121 +21,108 @@ Output: 0
 
 """
 
-# {0, INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX, INT_MAX}
 """
-class Solution {
-public:
-    int coinChange(vector<int>& coins, int n) {
-        // creating the base dp array, with first value set to 0
-        int dp[++n];
-        dp[0] = 0;
-        // more convenient to have the coins sorted
-        sort(begin(coins), end(coins));
-        // populating our dp array
-        for (int i = 1; i < n; i++) {
-            // setting dp[0] base value to 1, 0 for all the rest
-            dp[i] = INT_MAX;
-            for (int c: coins) {
-                if (i - c < 0) break;
-                // if it was a previously not reached cell, we do not add use it
-                if (dp[i - c] != INT_MAX) dp[i] = min(dp[i], 1 + dp[i - c]);
-            }
-        }
-        return dp[--n] == INT_MAX ? -1 : dp[n];
-    }
-};
+1. Recursion
+Time complexity: O(n^t)
+Space complexity: O(n)
+Where n is the length of the array coins and t is the given amount.
 """
 
+
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        def dfs(amount):
+            if amount == 0:
+                return 0
+
+            res = 1e9
+            for coin in coins:
+                if amount - coin >= 0:
+                    res = min(res, 1 + dfs(amount - coin))
+            return res
+
+        minCoins = dfs(amount)
+        return -1 if minCoins >= 1e9 else minCoins
+
+
 """
-[C++] Recursion --> DP Memoization --> DP Tabulation
-
-# solution 1: Recursion
-
-class Solution {
-public:    
-    int findLowestCoins(vector<int> &coins, int cur, int amount) {
-        if (cur >= coins.size() || amount <= 0)
-            return (amount == 0) ? 0 : INT_MAX - 1;   
-        
-        int res = -1;
-        if (coins[cur] > amount) {
-            int doNotTakeCoin = 0 + findLowestCoins(coins, cur + 1, amount - 0);
-            res = doNotTakeCoin;
-        }
-        else {
-            int takeCoin = 1 + findLowestCoins(coins, cur + 0, amount - coins[cur]);
-            int doNotTakeCoin = 0 + findLowestCoins(coins, cur + 1, amount - 0);
-            res = min(takeCoin, doNotTakeCoin);
-        }
-        return res;
-    }
-    
-    int coinChange(vector<int>& coins, int amount) {
-        int res = findLowestCoins(coins, 0, amount);
-        return (res == INT_MAX - 1 ) ? -1 : res;
-    }
-};
-
-# solution 2: DP Memoization
-
-class Solution {
-public:    
-    int dp[12 + 1][10000 + 1];
-    
-    int findLowestCoins(vector<int> &coins, int cur, int amount) {
-        if (cur == coins.size() || amount <= 0)
-            return (amount == 0) ? 0 : INT_MAX - 1;   
-        
-        if (dp[cur][amount] != -1)
-            return dp[cur][amount];
-        
-        int res = -1;
-        if (coins[cur] > amount) {
-            int doNotTakeCoin = 0 + findLowestCoins(coins, cur + 1, amount - 0);
-            dp[cur][amount] = res = doNotTakeCoin;
-        }
-        else {
-            int takeCoin = 1 + findLowestCoins(coins, cur + 0, amount - coins[cur]);
-            int doNotTakeCoin = 0 + findLowestCoins(coins, cur + 1, amount - 0);
-            dp[cur][amount] = res = min(takeCoin, doNotTakeCoin);
-        }
-        return dp[cur][amount] = res;
-    }
-    
-    int coinChange(vector<int>& coins, int amount) {
-        memset(dp, -1, sizeof(dp));
-        int res = findLowestCoins(coins, 0, amount);
-        return (res == INT_MAX - 1 ) ? -1 : res;
-    }
-};
-
-# solution 3: DP Tabulation
-
-class Solution {
-public:    
-    int dp[12 + 1][10000 + 1];
-    
-    int findLowestCoins(vector<int> &coins, int arraySize, int amount) {
-        for (int i = 0; i < arraySize + 1; i++)
-            for (int j = 0; j < amount + 1; j++)
-                if (i == 0 || j == 0)
-                    dp[i][j] = (j == 0) ? 0 : INT_MAX - 1;
-        
-        for (int i = 1; i < arraySize + 1; i++) {
-            for (int j = 1; j < amount + 1; j++) {
-                if (coins[i - 1] > j)
-                    dp[i][j] = 0 + dp[i - 1][j];
-                else
-                    dp[i][j] = min(0 + dp[i - 1][j], 1 + dp[i][j - coins[i - 1]]);
-            }
-        }
-        
-        return dp[arraySize][amount];
-    }
-    
-    int coinChange(vector<int>& coins, int amount) {
-        int res = findLowestCoins(coins, coins.size(), amount);
-        return (res == INT_MAX - 1) ? -1 : res;
-    }
-};
+2. DP (Top - down)
+Time complexity: O(n * t)
+Space complexity: O(n)
+Where n is the length of the array coins and t is the given amount.
 """
+
+
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        memo = {}
+
+        def dfs(amount):
+            if amount == 0:
+                return 0
+            if amount in memo:
+                return memo[amount]
+
+            res = 1e9
+            for coin in coins:
+                if amount - coin >= 0:
+                    res = min(res, 1 + dfs(amount - coin))
+
+            memo[amount] = res
+            return res
+
+        minCoins = dfs(amount)
+        return -1 if minCoins >= 1e9 else minCoins
+
+
+"""
+3. DP (Bottom - up)
+Time complexity: O(n * t)
+Space complexity: O(t)
+Where n is the length of the array coins and t is the given amount.
+"""
+
+
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        dp = [amount + 1] * (amount + 1)
+        dp[0] = 0
+
+        for a in range(1, amount + 1):
+            for c in coins:
+                if a - c >= 0:
+                    dp[a] = min(dp[a], 1 + dp[a - c])
+        return dp[amount] if dp[amount] != amount + 1 else -1
+
+
+"""
+4. BFS
+Time complexity: O(n * t)
+Space complexity: O(t)
+"""
+
+
+class Solution:
+    def coinChange(self, coins: List[int], amount: int) -> int:
+        if amount == 0:
+            return 0
+
+        q = deque([0])
+        seen = [False] * (amount + 1)
+        seen[0] = True
+        res = 0
+
+        while q:
+            res += 1
+            for _ in range(len(q)):
+                cur = q.popleft()
+                for coin in coins:
+                    nxt = cur + coin
+                    if nxt == amount:
+                        return res
+                    if nxt > amount or seen[nxt]:
+                        continue
+                    seen[nxt] = True
+                    q.append(nxt)
+
+        return -1
