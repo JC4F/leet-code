@@ -29,20 +29,6 @@ Space: O(N)
 """
 # https://leetcode.com/problems/longest-increasing-subsequence/solutions/1326308/c-python-dp-binary-search-bit-segment-tree-solutions-picture-explain-o-nlogn/
 
-from ast import List
-from bisect import bisect_left  # noqa: E402
-
-
-class Solution:  # 2516 ms, faster than 64.96%
-    def lengthOfLIS(self, nums: List[int]) -> int:
-        n = len(nums)
-        dp = [1] * n
-        for i in range(n):
-            for j in range(i):
-                if nums[i] > nums[j] and dp[i] < dp[j] + 1:
-                    dp[i] = dp[j] + 1
-        return max(dp)
-
 
 # Solution 2: Greedy with Binary Search
 """
@@ -63,115 +49,6 @@ class Solution:  # 68 ms, faster than 93.92%
                 idx = bisect_left(sub, x)  # Find the index of the first element >= x
                 sub[idx] = x  # Replace that number with x
         return len(sub)
-
-
-# Get Longest Increasing Subsequence Path
-class Solution:
-    def pathOfLIS(self, nums: List[int]):
-        sub = []
-        subIndex = []  # Store index instead of value for tracing path purpose
-        trace = [-1] * len(
-            nums
-        )  # trace[i] point to the index of previous number in LIS
-        for i, x in enumerate(nums):
-            if len(sub) == 0 or sub[-1] < x:
-                if subIndex:
-                    trace[i] = subIndex[-1]
-                sub.append(x)
-                subIndex.append(i)
-            else:
-                idx = bisect_left(
-                    sub, x
-                )  # Find the index of the smallest number >= x, replace that number with x
-                if idx > 0:
-                    trace[i] = subIndex[idx - 1]
-                sub[idx] = x
-                subIndex[idx] = i
-
-        path = []
-        t = subIndex[-1]
-        while t >= 0:
-            path.append(nums[t])
-            t = trace[t]
-        return path[::-1]
-
-
-print(Solution().pathOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
-
-
-# Solution 3: Binary Indexed Tree (Increase BASE of nums into one-base indexing)
-# ===> giống ở chỗ là đều tìm những cái nằm bên trái của mảng
-"""
-Time: O(N * logN)
-Space: O(N)
-"""
-
-
-class MaxBIT:  # One-based indexing
-    def __init__(self, size):
-        self.bit = [0] * (size + 1)
-
-    def get(self, idx):
-        ans = 0
-        while idx > 0:
-            ans = max(ans, self.bit[idx])
-            idx -= idx & (-idx)
-        return ans
-
-    def update(self, idx, val):
-        while idx < len(self.bit):
-            self.bit[idx] = max(self.bit[idx], val)
-            idx += idx & (-idx)
-
-
-class Solution:  # 360 ms, faster than 69.28%
-    def lengthOfLIS(self, nums: List[int]) -> int:
-        bit = MaxBIT(20001)
-        BASE = 10001
-        for x in nums:
-            subLongest = bit.get(BASE + x - 1)
-            bit.update(BASE + x, subLongest + 1)
-        return bit.get(20001)
-
-
-print(Solution().lengthOfLIS([2, 6, 8, 3, 4, 5, 1]))  # [2, 3, 4, 5]
-
-
-#  Solution 4: Binary Indexed Tree (Compress nums into values in [1...N])
-# quite hard ^_^
-# class MaxBIT:  # One-based indexing
-#     def __init__(self, size):
-#         self.bit = [0] * (size + 1)
-
-#     def get(self, idx):
-#         ans = 0
-#         while idx > 0:
-#             ans = max(ans, self.bit[idx])
-#             idx -= idx & (-idx)
-#         return ans
-
-#     def update(self, idx, val):
-#         while idx < len(self.bit):
-#             self.bit[idx] = max(self.bit[idx], val)
-#             idx += idx & (-idx)
-
-
-# class Solution:  # 188 ms, faster than 69.99%
-#     def lengthOfLIS(self, nums: List[int]) -> int:
-#         def compress(arr):  # For example: [1, 9999, 20, 10, 20]
-#             uniqueSorted = sorted(set(arr))
-#             for i in range(len(arr)):
-#                 arr[i] = (
-#                     bisect_left(uniqueSorted, arr[i]) + 1
-#                 )  # Result: [1, 4, 3, 2, 3]
-#             return len(uniqueSorted)
-
-#         nUnique = compress(nums)
-#         bit = MaxBIT(nUnique)
-#         for x in nums:
-#             subLongest = bit.get(x - 1)
-#             bit.update(x, subLongest + 1)
-#         return bit.get(nUnique)
 
 
 #  Solution 5: Segment Tree
@@ -225,3 +102,107 @@ class Solution:
             subLongest = segmentTree.query(0, n - 1, 0, 0, x - 1)
             segmentTree.update(0, n - 1, 0, x, subLongest + 1)
         return segmentTree.query(0, n - 1, 0, 0, n - 1)
+
+
+"""
+* DP (Bottom-up)
+* Time complexity: O(n^2)
+* Space complexity: O(n)
+"""
+
+
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        LIS = [1] * len(nums)
+
+        for i in range(len(nums) - 1, -1, -1):
+            for j in range(i + 1, len(nums)):
+                if nums[i] < nums[j]:
+                    LIS[i] = max(LIS[i], 1 + LIS[j])
+        return max(LIS)
+
+
+"""
+* Segment tree
+* Time complexity: O(n * log(n))
+* Space complexity: O(n)
+"""
+from bisect import bisect_left
+
+
+class SegmentTree:
+    def __init__(self, N):
+        self.n = N
+        while (self.n & (self.n - 1)) != 0:
+            self.n += 1
+        self.tree = [0] * (2 * self.n)
+
+    def update(self, i, val):
+        self.tree[self.n + i] = val
+        j = (self.n + i) >> 1
+        while j >= 1:
+            self.tree[j] = max(self.tree[j << 1], self.tree[j << 1 | 1])
+            j >>= 1
+
+    def query(self, l, r):
+        if l > r:
+            return 0
+        res = float("-inf")
+        l += self.n
+        r += self.n + 1
+        while l < r:
+            if l & 1:
+                res = max(res, self.tree[l])
+                l += 1
+            if r & 1:
+                r -= 1
+                res = max(res, self.tree[r])
+            l >>= 1
+            r >>= 1
+        return res
+
+
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        def compress(arr):
+            sortedArr = sorted(set(arr))
+            order = []
+            for num in arr:
+                order.append(bisect_left(sortedArr, num))
+            return order
+
+        nums = compress(nums)
+        n = len(nums)
+        segTree = SegmentTree(n)
+
+        LIS = 0
+        for num in nums:
+            curLIS = segTree.query(0, num - 1) + 1
+            segTree.update(num, curLIS)
+            LIS = max(LIS, curLIS)
+        return LIS
+
+
+"""
+* DP + Binary Search (bisect_left)
+* Time complexity: O(n * log(n))
+* Space complexity: O(n)
+"""
+
+
+class Solution:
+    def lengthOfLIS(self, nums: List[int]) -> int:
+        dp = []
+        dp.append(nums[0])
+
+        LIS = 1
+        for i in range(1, len(nums)):
+            if dp[-1] < nums[i]:
+                dp.append(nums[i])
+                LIS += 1
+                continue
+
+            idx = bisect_left(dp, nums[i])
+            dp[idx] = nums[i]
+
+        return LIS
