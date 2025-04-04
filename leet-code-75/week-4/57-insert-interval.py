@@ -21,32 +21,28 @@ Explanation: Because the new interval [4,8] overlaps with [3,5],[6,7],[8,10].
 """
 
 """
-public List<Interval> insert(List<Interval> intervals, Interval newInterval) {
-    List<Interval> result = new LinkedList<>();
-    int i = 0;
-    // add all the intervals ending before newInterval starts
-    while (i < intervals.size() && intervals.get(i).end < newInterval.start)
-        result.add(intervals.get(i++));
-    // merge all overlapping intervals to one considering newInterval
-    while (i < intervals.size() && intervals.get(i).start <= newInterval.end) {
-        newInterval = new Interval( // we could mutate newInterval here also
-                Math.min(newInterval.start, intervals.get(i).start),
-                Math.max(newInterval.end, intervals.get(i).end));
-        i++;
-    }
-    result.add(newInterval); // add the union of intervals we got
-    // add all the rest
-    while (i < intervals.size()) result.add(intervals.get(i++)); 
-    return result;
-}
+Greedy
+Time complexity: O(n)
+Space complexity: O(n)
 """
 
 
-def insert(self, intervals, newInterval):
-    s, e = newInterval.start, newInterval.end
-    left = [i for i in intervals if i.end < s]
-    right = [i for i in intervals if i.start > e]
-    if left + right != intervals:
-        s = min(s, intervals[len(left)].start)
-        e = max(e, intervals[~len(right)].end)
-    return left + [Interval(s, e)] + right
+class Solution:
+    def insert(
+        self, intervals: List[List[int]], newInterval: List[int]
+    ) -> List[List[int]]:
+        res = []
+
+        for i in range(len(intervals)):
+            if newInterval[1] < intervals[i][0]:
+                res.append(newInterval)
+                return res + intervals[i:]
+            elif newInterval[0] > intervals[i][1]:
+                res.append(intervals[i])
+            else:
+                newInterval = [
+                    min(newInterval[0], intervals[i][0]),
+                    max(newInterval[1], intervals[i][1]),
+                ]
+        res.append(newInterval)
+        return res
