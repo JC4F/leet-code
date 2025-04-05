@@ -20,28 +20,25 @@ Example 3:
 Input: intervals = [[1,2],[2,3]]
 Output: 0
 Explanation: You don't need to remove any of the intervals since they're already non-overlapping.
-
-====>
-Solution 1: sort, compare end before with first after
-    public int eraseOverlapIntervals(Interval[] intervals) {
-        if (intervals.length == 0)  return 0;
-
-        Arrays.sort(intervals, new myComparator());
-        int end = intervals[0].end;
-        int count = 1;
-
-        for (int i = 1; i < intervals.length; i++) {
-            if (intervals[i].start >= end) {
-                end = intervals[i].end;
-                count++;
-            }
-        }
-        return intervals.length - count;
-    }
-
-    class myComparator implements Comparator<Interval> {
-        public int compare(Interval a, Interval b) {
-            return a.end - b.end;
-        }
-    }
 """
+
+"""
+Greedy sort by start
+Time complexity: O(nlogn)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def eraseOverlapIntervals(self, intervals: List[List[int]]) -> int:
+        intervals.sort()
+        res = 0
+        prevEnd = intervals[0][1]
+
+        for start, end in intervals[1:]:
+            if start >= prevEnd:
+                prevEnd = end
+            else:
+                res += 1
+                prevEnd = min(end, prevEnd)
+        return res
