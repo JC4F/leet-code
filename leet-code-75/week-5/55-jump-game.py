@@ -15,44 +15,91 @@ Output: false
 Explanation: You will always arrive at index 3 no matter what. Its maximum jump length is 0, which makes it impossible to reach the last index.
 """
 
-# backward & forward way
 """
-bool canJump(int A[], int n) {
-    int i = 0;
-    for (int reach = 0; i < n && i <= reach; ++i)
-        reach = max(i + A[i], reach);
-    return i == n;
-}
-"""
-"""
-bool canJump(int A[], int n) {
-    int last=n-1,i,j;
-    for(i=n-2;i>=0;i--){
-        if(i+A[i]>=last)last=i;
-    }
-    return last<=0;
-}
+1. Recursion
+Time complexity: O(n!)
+Space complexity: O(n)
 """
 
+
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        def dfs(i):
+            if i == len(nums) - 1:
+                return True
+            end = min(len(nums) - 1, i + nums[i])
+            for j in range(i + 1, end + 1):
+                if dfs(j):
+                    return True
+            return False
+
+        return dfs(0)
+
+
 """
-# dp version
-class Solution {
-    vector<int> memo;
-    public:
-    bool canJump(vector<int>& nums) {
-        int n=nums.size();
-        vector<int> dp(n,0);
-        dp[0]=true;
-        
-        for(int i=1;i<n;i++){
-             for(int j=i-1;j>=0;j--){
-                 if(dp[j] && j+nums[j]>=i){
-                     dp[i]=true;
-                     break;
-                 }       
-             }           
-        }
-        return dp[n-1];
-  }
-};
+2. DP (Top-down)
+Time complexity: O(n^2)
+Space complexity: O(n)
 """
+
+
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        memo = {}
+
+        def dfs(i):
+            if i in memo:
+                return memo[i]
+            if i == len(nums) - 1:
+                return True
+            if nums[i] == 0:
+                return False
+
+            end = min(len(nums), i + nums[i] + 1)
+            for j in range(i + 1, end):
+                if dfs(j):
+                    memo[i] = True
+                    return True
+            memo[i] = False
+            return False
+
+        return dfs(0)
+
+
+"""
+3. DP (Bottom-up)
+Time complexity: O(n^2)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        n = len(nums)
+        dp = [False] * n
+        dp[-1] = True
+
+        for i in range(n - 2, -1, -1):
+            end = min(n, i + nums[i] + 1)
+            for j in range(i + 1, end):
+                if dp[j]:
+                    dp[i] = True
+                    break
+        return dp[0]
+
+
+"""
+4. Greedy
+Time complexity: O(n)
+Space complexity: O(1)
+"""
+
+
+class Solution:
+    def canJump(self, nums: List[int]) -> bool:
+        goal = len(nums) - 1
+
+        for i in range(len(nums) - 2, -1, -1):
+            if i + nums[i] >= goal:
+                goal = i
+        return goal == 0
