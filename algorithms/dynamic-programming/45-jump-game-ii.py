@@ -15,64 +15,95 @@ Output: 2
 """
 
 """
-# Solution - I (Brute Force) [Rejected]
-Time Complexity : O(N!)
-Space Complexity : O(N)
-int jump(vector<int>& nums, int pos = 0) {
-	if(pos >= size(nums) - 1) return 0;        
-	int minJumps = 10001;  // initialising to max possible jumps + 1
-	for(int j = 1; j <= nums[pos]; j++)  // explore all possible jump sizes from current position
-		minJumps = min(minJumps, 1 + jump(nums, pos + j));        
-	return minJumps;
-}
-
-# Solution - II (Recursive Dynamic Programming - Memoization) [Accepted]
-Time Complexity : O(N^2)
-Space Complexity : O(N)
-int jump(vector<int>& nums) {
-	vector<int> dp(size(nums), 10001); // initialise all to max possible jumps + 1 denoting dp[i] hasn't been computed yet
-	return solve(nums, dp, 0);
-}
-// recursive solver to find min jumps to reach end
-int solve(vector<int>& nums, vector<int>& dp, int pos) {
-	if(pos >= size(nums) - 1) return 0;    // when we reach end, return 0 denoting no more jumps required
-	if(dp[pos] != 10001) return dp[pos];    // number of jumps from pos to end is already calculated, so just return it
-	// explore all possible jump sizes from current position. Store & return min jumps required
-	for(int j = 1; j <= nums[pos]; j++)
-		dp[pos] = min(dp[pos], 1 + solve(nums, dp, pos + j));        
-	return dp[pos];
-}
-
-#  Solution - III (Iterative Dynamic Programming - Tabulation) [Accepted]
-Time Complexity : O(N^2)
-Space Complexity : O(N)
-int jump(vector<int>& nums) {
-	int n = size(nums);
-	vector<int> dp(n, 10001);
-	dp[n - 1] = 0;  // start from last index. No jumps required to reach end if we are already here
-	// same as above. For each index, explore all jump sizes and use the one requiring minimum jumps to reach end
-	for(int i = n - 2; i >= 0; i--) 
-		for(int jumpLen = 1; jumpLen <= nums[i]; jumpLen++) 
-			dp[i] = min(dp[i], 1 + dp[min(n - 1, i + jumpLen)]);  // min(n-1, i + jumpLen) for bounds handling
-	return dp[0];
-}
-
-
-#  Solution IV (Greedy BFS)
-Time Complexity : O(N)
-Space Complexity : O(1)
-int jump(vector<int>& nums) {
-	int n = size(nums), i = 0, maxReachable = 0, lastJumpedPos = 0, jumps = 0;
-	while(lastJumpedPos < n - 1) {  // loop till last jump hasn't taken us till the end
-		maxReachable = max(maxReachable, i + nums[i]);  // furthest index reachable on the next level from current level
-		if(i == lastJumpedPos) {			  // current level has been iterated & maxReachable position on next level has been finalised
-			lastJumpedPos = maxReachable;     // so just move to that maxReachable position
-			jumps++;                          // and increment the level
-	// NOTE: jump^ only gets updated after we iterate all possible jumps from previous level
-	//       This ensures jumps will only store minimum jump required to reach lastJumpedPos
-		}            
-		i++;
-	}
-	return jumps;
-}
+1. Recursion
+Time complexity: O(n!)
+Space complexity: O(n)
 """
+
+
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        def dfs(i):
+            if i == len(nums) - 1:
+                return 0
+            if nums[i] == 0:
+                return float("inf")
+
+            end = min(len(nums) - 1, i + nums[i])
+            res = float("inf")
+            for j in range(i + 1, end + 1):
+                res = min(res, 1 + dfs(j))
+            return res
+
+        return dfs(0)
+
+
+"""
+2. DP (Top-down)
+Time complexity: O(n^2)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        memo = {}
+
+        def dfs(i):
+            if i in memo:
+                return memo[i]
+            if i == len(nums) - 1:
+                return 0
+            if nums[i] == 0:
+                return 1000000
+
+            res = 1000000
+            end = min(len(nums), i + nums[i] + 1)
+            for j in range(i + 1, end):
+                res = min(res, 1 + dfs(j))
+            memo[i] = res
+            return res
+
+        return dfs(0)
+
+
+"""
+3. DP (Bottom-up)
+Time complexity: O(n^2)
+Space complexity: O(n)
+"""
+
+
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        n = len(nums)
+        dp = [1000000] * n
+        dp[-1] = 0
+
+        for i in range(n - 2, -1, -1):
+            end = min(n, i + nums[i] + 1)
+            for j in range(i + 1, end):
+                dp[i] = min(dp[i], 1 + dp[j])
+        return dp[0]
+
+
+"""
+4. Greedy
+Time complexity: O(n)
+Space complexity: O(1)
+"""
+
+
+class Solution:
+    def jump(self, nums: List[int]) -> int:
+        res = 0
+        l = r = 0
+
+        while r < len(nums) - 1:
+            farthest = 0
+            for i in range(l, r + 1):
+                farthest = max(farthest, i + nums[i])
+            l = r + 1
+            r = farthest
+            res += 1
+        return res
